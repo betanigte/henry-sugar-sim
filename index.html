@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Henry Sugar Simulator</title>
+    
+    <!-- PWA & Mobile Optimization Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- CUSTOM ROALD DAHL STYLE HANDWRITING FONTS -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Patrick+Hand+SC&family=Short+Stack&display=swap" rel="stylesheet">
+    
+    <!-- CROPPED ICON LINK (Uses the left character side from the original illustration) -->
+    <link rel="apple-touch-icon" href="https://imgur.com">
+    <link rel="icon" type="image/png" href="https://imgur.com">
+
+    <style>
+        :root {
+            /* EXACT TEAL BLUE FROM THE PROVIDED IMAGE */
+            --bg-color: #018da7; 
+            --card-bg: #141b24;
+            --text-color: #f4f4f5;
+            --text-secondary: #e4e4e7;
+            --accent-color: #cc2b2b;
+            --accent-hover: #b91c1c;
+            --correct-color: #22c55e;
+            --partial-color: #eab308;
+            --wrong-color: #ef4444;
+            
+            /* Roald Dahl Inspired Whimsical Font Profiles */
+            --font-display: 'Patrick Hand SC', cursive, sans-serif;
+            --font-body: 'Short Stack', cursive, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-body);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Splash Screen with Left-Cropped Character and Note */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, #02a5c4 0%, #018da7 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            text-align: center;
+            padding: 24px;
+        }
+        
+        .splash-icon-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 24px;
+            border: 4px solid #fff;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+            margin-bottom: 24px;
+            animation: bouncePulse 2.5s infinite ease-in-out;
+        }
+        
+        .splash-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+        
+        .splash-subtitle {
+            font-size: 0.95rem;
+            color: #fff;
+            max-width: 320px;
+            line-height: 1.4;
+            opacity: 0.95;
+            background: rgba(0,0,0,0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        @keyframes bouncePulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.03); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .container.loaded {
+            opacity: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        header h1 { 
+            font-family: var(--font-display);
+            font-size: 2.2rem; 
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        header p { font-size: 0.95rem; color: var(--text-secondary); font-weight: bold; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .stat-box { text-align: center; }
+        .stat-num { font-size: 1.35rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 8px 0;
+        }
+
+        .deck-view { position: relative; width: 140px; height: 200px; }
+
+        .playing-card {
+            width: 140px; height: 200px;
+            background: #fff;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            position: absolute;
+            transition: transform 0.4s ease, opacity 0.3s ease;
+            backface-visibility: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* TRADITIONAL RED GEOMETRIC BACK PATTERN DESIGN */
+        .playing-card.back {
+            background-color: #d12323;
+            background-image: radial-gradient(#fff 15%, transparent 16%),
+                              radial-gradient(#fff 15%, transparent 16%),
+                              linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1)),
+                              linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1));
+            background-size: 8px 8px, 8px 8px, 16px 16px, 16px 16px;
+            background-position: 0 0, 4px 4px, 0 0, 4px 4px;
+            border: 6px solid #fff;
+            color: #fff;
+            font-size: 2.5rem;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .playing-card.red { color: #e11d48; }
+
+        .controls {
+            width: 100%;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-label { font-family: var(--font-display); font-size: 0.95rem; color: var(--text-secondary); letter-spacing: 0.5px; }
+        .btn-row { display: flex; gap: 8px; }
+
+        button {
+            flex: 1; padding: 10px;
+            border: 2px solid #3f3f46;
+            background: #27272a; color: #fff;
+            border-radius: 8px; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button.guess-active { background: #ea580c; border-color: #ffedd5; }
+        
+        .flip-btn { 
+            background: #ea580c; 
+            font-family: var(--font-display);
+            font-size: 1.3rem; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+        .flip-btn:disabled { opacity: 0.5; }
+
+        .coach-panel {
+            background: linear-gradient(145deg, #111827 0%, #1f2937 100%);
+            border: 2px solid #4b5563; padding: 16px; border-radius: 16px; display: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .coach-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: bold; color: #fdba74; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .coach-text { font-size: 0.9rem; line-height: 1.5; color: #f3f4f6; }
+        .log { font-size: 0.95rem; font-weight: bold; color: #fff; text-shadow: 1px 1px 1px rgba(0,0,0,0.4); text-align: center; min-height: 22px; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100;
+        }
+
+        .modal-box {
+            background: var(--card-bg); border: 2px solid rgba(255,255,255,0.1); padding: 24px; border-radius: 16px;
+            width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .modal-box h2 { font-family: var(--font-display); font-size: 1.6rem; color: #fff; }
+        .modal-box p { font-size: 0.95rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+
+<!-- Custom App Splash Screen Container -->
+<div id="splash-screen">
+    <!-- Clean, Left-Cropped Character Square Image Pin -->
+    <img class="splash-logo splash-icon-img" src="https://imgur.com" alt="Henry Sugar Icon">
+    <div class="splash-title">Henry Sugar Simulator</div>
+    <div class="splash-subtitle">The official launcher setup of this app can fully include the character image as its home screen icon.</div>
+</div>
+
+<div class="container" id="app-container">
