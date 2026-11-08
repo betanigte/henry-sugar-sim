@@ -15,9 +15,9 @@
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Patrick+Hand+SC&family=Short+Stack&display=swap" rel="stylesheet">
     
-    <!-- CROPPED ICON LINK (Uses the left character side from the original illustration) -->
-    <link rel="apple-touch-icon" href="https://imgur.com">
-    <link rel="icon" type="image/png" href="https://imgur.com">
+    <!-- LOCAL NATIVE ICON LINK HOOKS -->
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
 
     <style>
         :root {
@@ -56,7 +56,7 @@
             overflow-x: hidden;
         }
 
-        /* Animated Splash Screen with Left-Cropped Character and Note */
+        /* Animated Splash Screen with Left-Cropped Character */
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -79,6 +79,7 @@
             box-shadow: 0 12px 24px rgba(0,0,0,0.3);
             margin-bottom: 24px;
             animation: bouncePulse 2.5s infinite ease-in-out;
+            object-fit: cover;
         }
         
         .splash-title {
@@ -88,17 +89,6 @@
             color: #fff;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
             margin-bottom: 8px;
-        }
-        
-        .splash-subtitle {
-            font-size: 0.95rem;
-            color: #fff;
-            max-width: 320px;
-            line-height: 1.4;
-            opacity: 0.95;
-            background: rgba(0,0,0,0.15);
-            padding: 8px 12px;
-            border-radius: 8px;
         }
 
         @keyframes bouncePulse {
@@ -260,10 +250,17 @@
 
 <!-- Custom App Splash Screen Container -->
 <div id="splash-screen">
-    <!-- Clean, Left-Cropped Character Square Image Pin -->
-    <img class="splash-logo splash-icon-img" src="https://imgur.com" alt="Henry Sugar Icon">
+    <img class="splash-logo splash-icon-img" src="icon.png" alt="Henry Sugar Icon">
     <div class="splash-title">Henry Sugar Simulator</div>
-    <div class="splash-subtitle">The official launcher setup of this app can fully include the character image as its home screen icon.</div>
 </div>
 
 <div class="container" id="app-container">
+    <header>
+        <h1>Henry Sugar Simulator</h1>
+        <p id="deck-count">Cards left: 52 / 52</p>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="stat-exact">0</div><div class="stat-label">Exact</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-num-only">0</div><div class="stat-label">Value Only</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-suit-only">0</div><div class="stat-label">Suit Only</div></div>
