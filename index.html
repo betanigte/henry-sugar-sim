@@ -11,9 +11,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     
     <!-- CUSTOM ROALD DAHL STYLE HANDWRITING FONTS -->
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Patrick+Hand+SC&family=Short+Stack&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&family=Short+Stack&display=swap" rel="stylesheet">
     
     <!-- LOCAL NATIVE ICON LINK HOOKS -->
     <link rel="apple-touch-icon" href="icon.png">
@@ -100,7 +100,7 @@
             margin: 8px 0;
         }
 
-        .deck-view { position: relative; width: 140px; height: 200px; }
+        .deck-view { position: relative; width: 140px; height: 200px; perspective: 1000px; }
 
         .playing-card {
             width: 140px; height: 200px;
@@ -115,6 +115,8 @@
             color: #000;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             position: absolute;
+            top: 0;
+            left: 0;
             transition: transform 0.4s ease, opacity 0.3s ease;
             backface-visibility: hidden;
             border: 1px solid #ccc;
@@ -133,6 +135,7 @@
             color: #fff;
             font-size: 2.5rem;
             text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+            transform-origin: left center;
         }
 
         .playing-card.red { color: #e11d48; }
@@ -188,7 +191,7 @@
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100;
+            background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100;
         }
 
         .modal-box {
@@ -246,3 +249,230 @@
                 <button data-suit="♠" onclick="setGuess('suit', '♠')">♠</button>
                 <button data-suit="♥" onclick="setGuess('suit', '♥')">♥</button>
                 <button data-suit="♦" onclick="setGuess('suit', '♦')">♦</button>
+                <button data-suit="♣" onclick="setGuess('suit', '♣')">♣</button>
+            </div>
+        </div>
+
+        <button class="flip-btn" id="main-flip-btn" onclick="flipCard()">Peer & Flip Card</button>
+    </div>
+
+    <button class="flip-btn" id="reset-btn" style="display:none;" onclick="initGame(true)">Start Fresh Deck</button>
+</div>
+
+<!-- RESUME MODAL -->
+<div class="modal-overlay" id="resume-modal">
+    <div class="modal-box">
+        <h2>Unfinished Sight Training Found</h2>
+        <p id="resume-details">You have an unfinished deck saved on this device.</p>
+        <div class="btn-row">
+            <button onclick="loadSavedGame()">Continue</button>
+            <button onclick="initGame(true)" style="background:var(--accent-color);">Start Fresh</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const suits = ['♠', '♥', '♦', '♣'];
+const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+let deck = [];
+let currentCard = null;
+let userGuess = { value: 'A', suit: '♠' };
+let isFlipping = false;
+let stats = { exact: 0, numOnly: 0, suitOnly: 0, wrong: 0 };
+let sessionHistory = [];
+
+// Directly initialize layout check on boot
+window.addEventListener('DOMContentLoaded', () => {
+    checkSavedState();
+});
+
+function checkSavedState() {
+    const savedDeck = localStorage.getItem('intuition_deck');
+    const savedStats = localStorage.getItem('intuition_stats');
+    if (savedDeck && savedStats) {
+        const tempDeck = JSON.parse(savedDeck);
+        if (tempDeck.length > 0 && tempDeck.length < 52) {
+            document.getElementById('resume-details').innerText = `You have ${tempDeck.length} cards left to look through in this session.`;
+            document.getElementById('resume-modal').style.display = 'flex';
+            return;
+        }
+    }
+    initGame(true);
+}
+
+function initGame(forceFresh = false) {
+    document.getElementById('resume-modal').style.display = 'none';
+    deck = [];
+    sessionHistory = [];
+    stats = { exact: 0, numOnly: 0, suitOnly: 0, wrong: 0 };
+    updateStatsUI();
+    for (let suit of suits) {
+        for (let val of values) {
+            deck.push({ value: val, suit: suit });
+        }
+    }
+    shuffle(deck);
+    document.getElementById('coach-panel').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'flex';
+    document.getElementById('reset-btn').style.display = 'none';
+    setGuess('value', 'A');
+    setGuess('suit', '♠');
+    drawNextCard();
+    saveToLocalStorage();
+}
+
+function loadSavedGame() {
+    document.getElementById('resume-modal').style.display = 'none';
+    deck = JSON.parse(localStorage.getItem('intuition_deck'));
+    stats = JSON.parse(localStorage.getItem('intuition_stats'));
+    sessionHistory = JSON.parse(localStorage.getItem('intuition_history')) || [];
+    currentCard = JSON.parse(localStorage.getItem('intuition_current_card'));
+    updateStatsUI();
+    document.getElementById('coach-panel').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'flex';
+    document.getElementById('reset-btn').style.display = 'none';
+    document.getElementById('deck-count').innerText = `Cards left: ${deck.length + 1} / 52`;
+    const front = document.getElementById('front-card');
+    front.innerText = `${currentCard.value}${currentCard.suit}`;
+    front.className = `playing-card ${(currentCard.suit==='♥'||currentCard.suit==='♦') ? 'red' : ''}`;
+    document.getElementById('back-card').style.transform = 'rotateY(0deg)';
+    setGuess('value', userGuess.value);
+    setGuess('suit', userGuess.suit);
+}
+
+function saveToLocalStorage() {
+    localStorage.setItem('intuition_deck', JSON.stringify(deck));
+    localStorage.setItem('intuition_stats', JSON.stringify(stats));
+    localStorage.setItem('intuition_history', JSON.stringify(sessionHistory));
+    localStorage.setItem('intuition_current_card', JSON.stringify(currentCard));
+}
+
+function clearLocalStorage() {
+    localStorage.removeItem('intuition_deck');
+    localStorage.removeItem('intuition_stats');
+    localStorage.removeItem('intuition_history');
+    localStorage.removeItem('intuition_current_card');
+}
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function drawNextCard() {
+    if (deck.length === 0 && !currentCard) {
+        endRound();
+        return;
+    }
+    if (deck.length > 0) {
+        currentCard = deck.pop();
+    }
+    document.getElementById('deck-count').innerText = `Cards left: ${deck.length + 1} / 52`;
+    const front = document.getElementById('front-card');
+    front.innerText = `${currentCard.value}${currentCard.suit}`;
+    front.className = `playing-card ${(currentCard.suit==='♥'||currentCard.suit==='♦') ? 'red' : ''}`;
+    document.getElementById('back-card').style.transform = 'rotateY(0deg)';
+    document.getElementById('main-flip-btn').disabled = false;
+    isFlipping = false;
+    saveToLocalStorage();
+}
+
+function setGuess(type, choice) {
+    if (isFlipping) return;
+    userGuess[type] = choice;
+    if(type === 'value') {
+        document.querySelectorAll('#value-buttons button').forEach(b => b.classList.remove('guess-active'));
+        const matchBtn = Array.from(document.querySelectorAll('#value-buttons button')).find(b => b.getAttribute('data-val') === choice);
+        if(matchBtn) matchBtn.classList.add('guess-active');
+    } else {
+        document.querySelectorAll('#suit-buttons button').forEach(b => b.classList.remove('guess-active'));
+        const matchBtn = Array.from(document.querySelectorAll('#suit-buttons button')).find(b => b.getAttribute('data-suit') === choice);
+        if(matchBtn) matchBtn.classList.add('guess-active');
+    }
+}
+
+function promptValue() {
+    if (isFlipping) return;
+    const val = prompt("Enter any value (2-10, J, Q, K, A):");
+    if(val && values.includes(val.toUpperCase())) {
+        const upper = val.toUpperCase();
+        document.getElementById('custom-val-btn').setAttribute('data-val', upper);
+        document.getElementById('custom-val-btn').innerText = upper;
+        setGuess('value', upper);
+    }
+}
+
+function flipCard() {
+    if (isFlipping) return;
+    isFlipping = true;
+    document.getElementById('main-flip-btn').disabled = true;
+    document.getElementById('back-card').style.transform = 'rotateY(90deg)';
+    const valMatch = userGuess.value === currentCard.value;
+    const suitMatch = userGuess.suit === currentCard.suit;
+    let resultType = "";
+    if (valMatch && suitMatch) {
+        stats.exact++;
+        resultType = "Exact";
+        document.getElementById('game-log').innerText = `🔥 Splendid! It was the ${currentCard.value} of ${currentCard.suit}!`;
+    } else if (valMatch && !suitMatch) {
+        stats.numOnly++;
+        resultType = "ValueOnly";
+        document.getElementById('game-log').innerText = `🌓 Half Right! Right Number (${currentCard.value}), wrong suit.`;
+    } else if (!valMatch && suitMatch) {
+        stats.suitOnly++;
+        resultType = "SuitOnly";
+        document.getElementById('game-log').innerText = `🌓 Half Right! Right Suit (${currentCard.suit}), wrong number.`;
+    } else {
+        stats.wrong++;
+        resultType = "Miss";
+        document.getElementById('game-log').innerText = `Miss. It was the ${currentCard.value} of ${currentCard.suit}.`;
+    }
+    sessionHistory.push({ guess: {...userGuess}, actual: {...currentCard}, type: resultType });
+    updateStatsUI();
+    saveToLocalStorage();
+    setTimeout(() => {
+        if(deck.length > 0) {
+            drawNextCard();
+        } else {
+            currentCard = null;
+            clearLocalStorage();
+            endRound();
+        }
+    }, 1800);
+}
+
+function updateStatsUI() {
+    document.getElementById('stat-exact').innerText = stats.exact;
+    document.getElementById('stat-num-only').innerText = stats.numOnly;
+    document.getElementById('stat-suit-only').innerText = stats.suitOnly;
+    document.getElementById('stat-wrong').innerText = stats.wrong;
+}
+
+function endRound() {
+    document.getElementById('deck-count').innerText = "Session Finished!";
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('reset-btn').style.display = 'block';
+    const total = sessionHistory.length || 52;
+    const suitRate = ((stats.exact + stats.suitOnly) / total * 100).toFixed(0);
+    const valRate = ((stats.exact + stats.numOnly) / total * 100).toFixed(0);
+    let improvement = "";
+    let focus = "";
+    if (suitRate > valRate) {
+        improvement = `Your <strong>Suit Connection (${suitRate}%)</strong> is remarkably sharp. You are focusing perfectly on the elemental symbols and red vs. black colors.`;
+        focus = `Your <strong>Value Recognition (${valRate}%)</strong> fell behind. Channel the patience of Henry Sugar's candle training—let your mind relax beyond specific faces or ranks to let the pure digit form.`;
+    } else if (valRate > suitRate) {
+        improvement = `Your <strong>Numeric Attunement (${valRate}%)</strong> was highly accurate! You are capturing the math and values effectively.`;
+        focus = `Your <strong>Suit Accuracy (${suitRate}%)</strong> was lower. Try visualizing simple colored shapes before choosing an exact crest.`;
+    } else {
+        improvement = "Your concentration was perfectly uniform across both suits and values.";
+        focus = "To ascend beyond this baseline level, focus on breathing uniformly for three full seconds before committing your fingers to a selection.";
+    }
+    document.getElementById('coach-text').innerHTML = `<strong>What you improved on:</strong> ${improvement}<br><br><strong>What to get better at:</strong> ${focus}`;
+    document.getElementById('coach-panel').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
