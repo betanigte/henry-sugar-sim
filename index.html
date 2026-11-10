@@ -5,34 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Henry Sugar Simulator</title>
     
-    <!-- PWA & Mobile Optimization Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- CUSTOM ROALD DAHL STYLE HANDWRITING FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&family=Short+Stack&display=swap" rel="stylesheet">
     
-    <!-- LOCAL NATIVE ICON LINK HOOKS -->
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
-
     <style>
         :root {
-            /* EXACT TEAL BLUE FROM THE PROVIDED IMAGE */
             --bg-color: #018da7; 
             --card-bg: #141b24;
             --text-color: #f4f4f5;
             --text-secondary: #e4e4e7;
             --accent-color: #cc2b2b;
-            --accent-hover: #b91c1c;
             --correct-color: #22c55e;
             --partial-color: #eab308;
             --wrong-color: #ef4444;
             
-            /* Roald Dahl Inspired Whimsical Font Profiles */
             --font-display: 'Patrick Hand SC', cursive, sans-serif;
             --font-body: 'Short Stack', cursive, sans-serif;
         }
@@ -65,17 +56,36 @@
         }
 
         header {
-            text-align: center;
-            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
         }
 
-        header h1 { 
+        .header-left h1 { 
             font-family: var(--font-display);
-            font-size: 2.2rem; 
+            font-size: 1.9rem; 
             color: #fff;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
-        header p { font-size: 0.95rem; color: var(--text-secondary); font-weight: bold; }
+        .header-left p { font-size: 0.9rem; color: var(--text-secondary); font-weight: bold; }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: var(--font-display);
+        }
+        .icon-btn:hover { background: #27272a; }
 
         .stats-grid {
             display: grid;
@@ -97,32 +107,39 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            margin: 8px 0;
+            margin: 4px 0;
         }
 
-        .deck-view { position: relative; width: 140px; height: 200px; perspective: 1000px; }
+        .deck-view { 
+            position: relative; 
+            width: 150px; 
+            height: 220px; 
+        }
 
         .playing-card {
-            width: 140px; height: 200px;
+            width: 150px; 
+            height: 220px;
             background: #fff;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.2rem;
-            font-weight: bold;
+            justify-content: space-between;
+            padding: 8px 10px;
             color: #000;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             position: absolute;
             top: 0;
             left: 0;
-            transition: transform 0.4s ease, opacity 0.3s ease;
-            backface-visibility: hidden;
-            border: 1px solid #ccc;
+            border: 1px solid #d1d5db;
+            user-select: none;
         }
 
-        /* TRADITIONAL RED GEOMETRIC BACK PATTERN DESIGN */
+        /* FRONT CARD UNDERNEATH - HIDDEN INITIALLY */
+        #front-card {
+            z-index: 1;
+        }
+
+        /* BACK CARD OVERLAY - GUARANTEED TO FULLY COVER FRONT UNTIL FLIPPED */
         .playing-card.back {
             background-color: #d12323;
             background-image: radial-gradient(#fff 15%, transparent 16%),
@@ -133,12 +150,54 @@
             background-position: 0 0, 4px 4px, 0 0, 4px 4px;
             border: 6px solid #fff;
             color: #fff;
-            font-size: 2.5rem;
-            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
-            transform-origin: left center;
+            z-index: 50; 
+            transition: transform 0.4s ease, opacity 0.3s ease;
         }
 
         .playing-card.red { color: #e11d48; }
+
+        .card-top-left {
+            align-self: flex-start;
+            line-height: 1;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .card-bottom-right {
+            align-self: flex-end;
+            line-height: 1;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transform: rotate(180deg);
+        }
+
+        .card-center-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            align-items: center;
+            justify-items: center;
+            font-size: 1.1rem;
+            padding: 4px 0;
+            line-height: 1;
+        }
+
+        .pip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-center-face {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
 
         .controls {
             width: 100%;
@@ -167,6 +226,20 @@
 
         button.guess-active { background: #ea580c; border-color: #ffedd5; }
         
+        .text-input-guess {
+            width: 100%;
+            background: #18181b;
+            border: 2px solid #3f3f46;
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            text-align: center;
+            font-family: var(--font-body);
+        }
+        .text-input-guess:focus { border-color: #ea580c; }
+
         .flip-btn { 
             background: #ea580c; 
             font-family: var(--font-display);
@@ -196,19 +269,54 @@
 
         .modal-box {
             background: var(--card-bg); border: 2px solid rgba(255,255,255,0.1); padding: 24px; border-radius: 16px;
-            width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; gap: 16px;
+            width: 100%; max-width: 440px; max-height: 85vh; text-align: center; display: flex; flex-direction: column; gap: 16px;
+            overflow-y: auto;
         }
 
         .modal-box h2 { font-family: var(--font-display); font-size: 1.6rem; color: #fff; }
         .modal-box p { font-size: 0.95rem; color: var(--text-secondary); }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            text-align: left;
+            padding-right: 4px;
+        }
+        .history-item {
+            background: #18181b;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #3f3f46;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge-exact { color: #22c55e; font-weight: bold; }
+        .badge-partial { color: #eab308; font-weight: bold; }
+        .badge-miss { color: #ef4444; font-weight: bold; }
+
+        .close-modal-btn {
+            background: #3f3f46;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container" id="app-container">
     <header>
-        <h1>Henry Sugar Simulator</h1>
-        <p id="deck-count">Cards left: 52 / 52</p>
+        <div class="header-left">
+            <h1>Henry Sugar Simulator</h1>
+            <p id="deck-count">Cards left: 52 / 52</p>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="openHistoryModal()">History</button>
+            <button class="icon-btn" onclick="pauseGame()">Pause/Save</button>
+        </div>
     </header>
 
     <div class="stats-grid">
@@ -220,8 +328,14 @@
 
     <div class="game-area">
         <div class="deck-view">
-            <div class="playing-card" id="front-card"></div>
-            <div class="playing-card back" id="back-card">♦</div>
+            <!-- Front Card Underneath - Completely blank or hidden until flipped -->
+            <div class="playing-card" id="front-card">
+                <div class="card-top-left" id="card-tl"></div>
+                <div id="card-center-container" style="flex:1; position:relative; width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center;"></div>
+                <div class="card-bottom-right" id="card-br"></div>
+            </div>
+            <!-- Back Card On Top - High z-index guarantees it blocks sight until flipped -->
+            <div class="playing-card back" id="back-card"></div>
         </div>
         <div class="log" id="game-log">See through the card... make your prediction!</div>
     </div>
@@ -233,23 +347,17 @@
 
     <div class="controls" id="game-controls">
         <div class="control-group">
-            <div class="control-label">GUESS VALUE</div>
-            <div class="btn-row" id="value-buttons">
-                <button data-val="A" onclick="setGuess('value', 'A')">A</button>
-                <button data-val="7" onclick="setGuess('value', '7')">7</button>
-                <button data-val="10" onclick="setGuess('value', '10')">10</button>
-                <button data-val="K" onclick="setGuess('value', 'K')">K</button>
-                <button style="flex:0.5" id="custom-val-btn" onclick="promptValue()">...</button>
-            </div>
+            <div class="control-label">GUESS VALUE (e.g. 2-10, J, Q, K, A)</div>
+            <input type="text" id="value-input" class="text-input-guess" placeholder="Enter value (e.g., A, 10, K)" maxlength="3" autocomplete="off">
         </div>
 
         <div class="control-group">
             <div class="control-label">GUESS SUIT</div>
             <div class="btn-row" id="suit-buttons">
-                <button data-suit="♠" onclick="setGuess('suit', '♠')">♠</button>
-                <button data-suit="♥" onclick="setGuess('suit', '♥')">♥</button>
-                <button data-suit="♦" onclick="setGuess('suit', '♦')">♦</button>
-                <button data-suit="♣" onclick="setGuess('suit', '♣')">♣</button>
+                <button data-suit="♠" onclick="setSuit('♠')">♠</button>
+                <button data-suit="♥" onclick="setSuit('♥')">♥</button>
+                <button data-suit="♦" onclick="setSuit('♦')">♦</button>
+                <button data-suit="♣" onclick="setSuit('♣')">♣</button>
             </div>
         </div>
 
@@ -259,17 +367,93 @@
     <button class="flip-btn" id="reset-btn" style="display:none;" onclick="initGame(true)">Start Fresh Deck</button>
 </div>
 
-<!-- RESUME MODAL -->
+<!-- RESUME / PAUSE MODAL -->
 <div class="modal-overlay" id="resume-modal">
     <div class="modal-box">
-        <h2>Unfinished Sight Training Found</h2>
-        <p id="resume-details">You have an unfinished deck saved on this device.</p>
-        <div class="btn-row">
+        <h2 id="modal-title">Sight Training Session</h2>
+        <p id="resume-details">An unfinished deck is saved on this device.</p>
+        <div class="btn-row" id="modal-btn-row">
             <button onclick="loadSavedGame()">Continue</button>
             <button onclick="initGame(true)" style="background:var(--accent-color);">Start Fresh</button>
         </div>
     </div>
 </div>
+
+<!-- HISTORY & STATS LOG MODAL -->
+<div class="modal-overlay" id="history-modal">
+    <div class="modal-box">
+        <h2>Past Game Sessions & Stats</h2>
+        <p>Review your historical performance across previous sittings.</p>
+        <div class="history-list" id="past-sessions-list"></div>
+        <button class="close-modal-btn" onclick="closeHistoryModal()">Close</button>
+    </div>
+</div>
+
+<style>
+    /* Clean, realistic playing card styling matching reference design */
+    .playing-card {
+        width: 150px; 
+        height: 220px;
+        background: #fff;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 8px 10px;
+        color: #000;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        position: absolute;
+        top: 0;
+        left: 0;
+        backface-visibility: hidden;
+        border: 1px solid #d1d5db;
+        user-select: none;
+    }
+
+    #front-card {
+        z-index: 1;
+        opacity: 1; /* Ensure front card is fully opaque when back card rotates away */
+    }
+
+    .playing-card.back {
+        background-color: #d12323;
+        background-image: radial-gradient(#fff 15%, transparent 16%),
+                          radial-gradient(#fff 15%, transparent 16%),
+                          linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1)),
+                          linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1));
+        background-size: 8px 8px, 8px 8px, 16px 16px, 16px 16px;
+        background-position: 0 0, 4px 4px, 0 0, 4px 4px;
+        border: 6px solid #fff;
+        color: #fff;
+        z-index: 50; 
+        transform-origin: left center;
+        transition: transform 0.5s ease, opacity 0.4s ease;
+    }
+
+    .card-top-left {
+        align-self: flex-start;
+        line-height: 1.1;
+        font-size: 1.25rem;
+        font-weight: bold;
+        font-family: sans-serif;
+    }
+
+    .card-bottom-right {
+        align-self: flex-end;
+        line-height: 1.1;
+        font-size: 1.25rem;
+        font-weight: bold;
+        transform: rotate(180deg);
+        font-family: sans-serif;
+    }
+
+    .pip-abs {
+        position: absolute;
+        font-size: 1.2rem;
+        line-height: 1;
+        transform: translate(-50%, -50%);
+    }
+</style>
 
 <script>
 const suits = ['♠', '♥', '♦', '♣'];
@@ -281,7 +465,6 @@ let isFlipping = false;
 let stats = { exact: 0, numOnly: 0, suitOnly: 0, wrong: 0 };
 let sessionHistory = [];
 
-// Directly initialize layout check on boot
 window.addEventListener('DOMContentLoaded', () => {
     checkSavedState();
 });
@@ -292,7 +475,12 @@ function checkSavedState() {
     if (savedDeck && savedStats) {
         const tempDeck = JSON.parse(savedDeck);
         if (tempDeck.length > 0 && tempDeck.length < 52) {
+            document.getElementById('modal-title').innerText = "Unfinished Sight Training Found";
             document.getElementById('resume-details').innerText = `You have ${tempDeck.length} cards left to look through in this session.`;
+            document.getElementById('modal-btn-row').innerHTML = `
+                <button onclick="loadSavedGame()">Continue</button>
+                <button onclick="initGame(true)" style="background:var(--accent-color);">Start Fresh</button>
+            `;
             document.getElementById('resume-modal').style.display = 'flex';
             return;
         }
@@ -306,6 +494,8 @@ function initGame(forceFresh = false) {
     sessionHistory = [];
     stats = { exact: 0, numOnly: 0, suitOnly: 0, wrong: 0 };
     updateStatsUI();
+    
+    // Complete 52-card deck initialization containing all numbers, Jacks, Queens, Kings, and Aces
     for (let suit of suits) {
         for (let val of values) {
             deck.push({ value: val, suit: suit });
@@ -315,29 +505,58 @@ function initGame(forceFresh = false) {
     document.getElementById('coach-panel').style.display = 'none';
     document.getElementById('game-controls').style.display = 'flex';
     document.getElementById('reset-btn').style.display = 'none';
-    setGuess('value', 'A');
-    setGuess('suit', '♠');
+    
+    userGuess.value = 'A';
+    userGuess.suit = '♠';
+    document.getElementById('value-input').value = 'A';
+    setSuit('♠');
+    
     drawNextCard();
     saveToLocalStorage();
 }
 
 function loadSavedGame() {
     document.getElementById('resume-modal').style.display = 'none';
-    deck = JSON.parse(localStorage.getItem('intuition_deck'));
-    stats = JSON.parse(localStorage.getItem('intuition_stats'));
+    deck = JSON.parse(localStorage.getItem('intuition_deck')) || [];
+    stats = JSON.parse(localStorage.getItem('intuition_stats')) || { exact: 0, numOnly: 0, suitOnly: 0, wrong: 0 };
     sessionHistory = JSON.parse(localStorage.getItem('intuition_history')) || [];
     currentCard = JSON.parse(localStorage.getItem('intuition_current_card'));
+    
     updateStatsUI();
     document.getElementById('coach-panel').style.display = 'none';
     document.getElementById('game-controls').style.display = 'flex';
     document.getElementById('reset-btn').style.display = 'none';
-    document.getElementById('deck-count').innerText = `Cards left: ${deck.length + 1} / 52`;
-    const front = document.getElementById('front-card');
-    front.innerText = `${currentCard.value}${currentCard.suit}`;
-    front.className = `playing-card ${(currentCard.suit==='♥'||currentCard.suit==='♦') ? 'red' : ''}`;
-    document.getElementById('back-card').style.transform = 'rotateY(0deg)';
-    setGuess('value', userGuess.value);
-    setGuess('suit', userGuess.suit);
+    document.getElementById('deck-count').innerText = `Cards left: ${deck.length + (currentCard ? 1 : 0)} / 52`;
+    
+    // Keep card hidden behind back overlay on load
+    const frontCard = document.getElementById('front-card');
+    frontCard.style.opacity = '0';
+    const backCard = document.getElementById('back-card');
+    backCard.style.transform = 'rotateY(0deg)';
+    backCard.style.opacity = '1';
+    backCard.style.zIndex = '10';
+
+    if (currentCard) {
+        prepareCardFace(currentCard);
+    }
+    
+    if (sessionHistory.length > 0) {
+        const lastGuess = sessionHistory[sessionHistory.length - 1].guess;
+        userGuess = {...lastGuess};
+        document.getElementById('value-input').value = userGuess.value;
+        setSuit(userGuess.suit);
+    }
+}
+
+function pauseGame() {
+    saveToLocalStorage();
+    document.getElementById('modal-title').innerText = "Training Paused & Saved";
+    document.getElementById('resume-details').innerText = "Your progress is saved securely on this device. You can safely resume whenever you are ready.";
+    document.getElementById('modal-btn-row').innerHTML = `
+        <button onclick="document.getElementById('resume-modal').style.display='none'">Resume Playing</button>
+        <button onclick="initGame(true)" style="background:var(--accent-color);">Restart Fresh Deck</button>
+    `;
+    document.getElementById('resume-modal').style.display = 'flex';
 }
 
 function saveToLocalStorage() {
@@ -354,6 +573,46 @@ function clearLocalStorage() {
     localStorage.removeItem('intuition_current_card');
 }
 
+function savePastSessionStats() {
+    const pastSessions = JSON.parse(localStorage.getItem('intuition_past_sessions') || '[]');
+    const sessionRecord = {
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        stats: {...stats},
+        totalGuessed: sessionHistory.length
+    };
+    pastSessions.unshift(sessionRecord);
+    if (pastSessions.length > 15) pastSessions.pop();
+    localStorage.setItem('intuition_past_sessions', JSON.stringify(pastSessions));
+}
+
+function openHistoryModal() {
+    const listEl = document.getElementById('past-sessions-list');
+    const pastSessions = JSON.parse(localStorage.getItem('intuition_past_sessions') || '[]');
+    
+    if (pastSessions.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; color:var(--text-secondary); padding: 20px;">No completed game records found yet. Finish a deck to log your stats!</div>`;
+    } else {
+        listEl.innerHTML = pastSessions.map((session, idx) => `
+            <div class="history-item">
+                <div>
+                    <strong>Session #${pastSessions.length - idx}</strong><br>
+                    <span style="font-size:0.75rem; color:#a1a1aa;">${session.date}</span>
+                </div>
+                <div style="text-align:right; font-size:0.8rem;">
+                    <span class="badge-exact">Exact: ${session.stats.exact}</span> | 
+                    <span class="badge-partial">Partial: ${session.stats.numOnly + session.stats.suitOnly}</span> | 
+                    <span class="badge-miss">Misses: ${session.stats.wrong}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    document.getElementById('history-modal').style.display = 'flex';
+}
+
+function closeHistoryModal() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -361,57 +620,159 @@ function shuffle(array) {
     }
 }
 
+function setSuit(suitChoice) {
+    if (isFlipping) return;
+    userGuess.suit = suitChoice;
+    document.querySelectorAll('#suit-buttons button').forEach(b => b.classList.remove('guess-active'));
+    const matchBtn = Array.from(document.querySelectorAll('#suit-buttons button')).find(b => b.getAttribute('data-suit') === suitChoice);
+    if (matchBtn) matchBtn.classList.add('guess-active');
+}
+
 function drawNextCard() {
     if (deck.length === 0 && !currentCard) {
         endRound();
         return;
     }
+    
+    // Reset the log message as the new card is dealt and covered
+    document.getElementById('game-log').innerText = "See through the card... make your prediction!";
+    
+    // INSTANTLY snap back card over the view BEFORE updating the underlying card face
+    const backCard = document.getElementById('back-card');
+    backCard.style.transition = 'none';
+    backCard.style.transform = 'rotateY(0deg) scale(1)';
+    backCard.style.opacity = '1';
+    backCard.style.zIndex = '50';
+    
+    // Force DOM reflow to ensure the cover is applied immediately
+    void backCard.offsetWidth;
+    
+    // Re-enable smooth transition for the next flip
+    backCard.style.transition = 'transform 0.5s ease, opacity 0.4s ease';
+
     if (deck.length > 0) {
         currentCard = deck.pop();
     }
     document.getElementById('deck-count').innerText = `Cards left: ${deck.length + 1} / 52`;
-    const front = document.getElementById('front-card');
-    front.innerText = `${currentCard.value}${currentCard.suit}`;
-    front.className = `playing-card ${(currentCard.suit==='♥'||currentCard.suit==='♦') ? 'red' : ''}`;
-    document.getElementById('back-card').style.transform = 'rotateY(0deg)';
+    
+    prepareCardFace(currentCard);
+
     document.getElementById('main-flip-btn').disabled = false;
     isFlipping = false;
     saveToLocalStorage();
 }
 
-function setGuess(type, choice) {
-    if (isFlipping) return;
-    userGuess[type] = choice;
-    if(type === 'value') {
-        document.querySelectorAll('#value-buttons button').forEach(b => b.classList.remove('guess-active'));
-        const matchBtn = Array.from(document.querySelectorAll('#value-buttons button')).find(b => b.getAttribute('data-val') === choice);
-        if(matchBtn) matchBtn.classList.add('guess-active');
-    } else {
-        document.querySelectorAll('#suit-buttons button').forEach(b => b.classList.remove('guess-active'));
-        const matchBtn = Array.from(document.querySelectorAll('#suit-buttons button')).find(b => b.getAttribute('data-suit') === choice);
-        if(matchBtn) matchBtn.classList.add('guess-active');
+function prepareCardFace(card) {
+    const isRed = (card.suit === '♥' || card.suit === '♦');
+    const front = document.getElementById('front-card');
+    front.className = `playing-card ${isRed ? 'red' : ''}`;
+    
+    document.getElementById('card-tl').innerHTML = `${card.value}<br><span style="font-size:1.1rem;">${card.suit}</span>`;
+    document.getElementById('card-br').innerHTML = `${card.value}<br><span style="font-size:1.1rem;">${card.suit}</span>`;
+    
+    const centerContainer = document.getElementById('card-center-container');
+    centerContainer.innerHTML = '';
+    
+    const val = card.value;
+    const suit = card.suit;
+
+    if (['J', 'Q', 'K'].includes(val)) {
+        centerContainer.style.display = 'block';
+        centerContainer.innerHTML = getCourtCardSVG(val, suit, isRed);
+        return;
+    } else if (val === 'A') {
+        centerContainer.style.display = 'flex';
+        centerContainer.style.alignItems = 'center';
+        centerContainer.style.justifyContent = 'center';
+        centerContainer.innerHTML = `<span style="font-size:3.2rem;">${suit}</span>`;
+        return;
     }
+
+    centerContainer.style.display = 'block';
+    const num = parseInt(val, 10);
+    let coords = [];
+
+    if (num === 2) {
+        coords = [{x: 50, y: 25}, {x: 50, y: 75, rot: 180}];
+    } else if (num === 3) {
+        coords = [{x: 50, y: 20}, {x: 50, y: 50}, {x: 50, y: 80, rot: 180}];
+    } else if (num === 4) {
+        coords = [{x: 28, y: 25}, {x: 72, y: 25}, {x: 28, y: 75, rot: 180}, {x: 72, y: 75, rot: 180}];
+    } else if (num === 5) {
+        coords = [{x: 28, y: 25}, {x: 72, y: 25}, {x: 50, y: 50}, {x: 28, y: 75, rot: 180}, {x: 72, y: 75, rot: 180}];
+    } else if (num === 6) {
+        coords = [{x: 28, y: 22}, {x: 72, y: 22}, {x: 28, y: 50}, {x: 72, y: 50}, {x: 28, y: 78, rot: 180}, {x: 72, y: 78, rot: 180}];
+    } else if (num === 7) {
+        coords = [{x: 28, y: 22}, {x: 72, y: 22}, {x: 50, y: 36}, {x: 28, y: 52}, {x: 72, y: 52}, {x: 28, y: 80, rot: 180}, {x: 72, y: 80, rot: 180}];
+    } else if (num === 8) {
+        coords = [{x: 28, y: 20}, {x: 72, y: 20}, {x: 50, y: 35}, {x: 28, y: 50}, {x: 72, y: 50}, {x: 50, y: 65, rot: 180}, {x: 28, y: 80, rot: 180}, {x: 72, y: 80, rot: 180}];
+    } else if (num === 9) {
+        coords = [{x: 28, y: 20}, {x: 72, y: 20}, {x: 28, y: 40}, {x: 72, y: 40}, {x: 50, y: 50}, {x: 28, y: 60, rot: 180}, {x: 72, y: 60, rot: 180}, {x: 28, y: 80, rot: 180}, {x: 72, y: 80, rot: 180}];
+    } else if (num === 10) {
+        coords = [{x: 28, y: 18}, {x: 72, y: 18}, {x: 50, y: 30}, {x: 28, y: 44}, {x: 72, y: 44}, {x: 28, y: 56, rot: 180}, {x: 72, y: 56, rot: 180}, {x: 50, y: 70, rot: 180}, {x: 28, y: 82, rot: 180}, {x: 72, y: 82, rot: 180}];
+    }
+
+    coords.forEach(c => {
+        const pip = document.createElement('div');
+        pip.className = 'pip-abs';
+        pip.style.left = c.x + '%';
+        pip.style.top = c.y + '%';
+        if (c.rot) {
+            pip.style.transform = `translate(-50%, -50%) rotate(${c.rot}deg)`;
+        }
+        pip.innerText = suit;
+        centerContainer.appendChild(pip);
+    });
 }
 
-function promptValue() {
-    if (isFlipping) return;
-    const val = prompt("Enter any value (2-10, J, Q, K, A):");
-    if(val && values.includes(val.toUpperCase())) {
-        const upper = val.toUpperCase();
-        document.getElementById('custom-val-btn').setAttribute('data-val', upper);
-        document.getElementById('custom-val-btn').innerText = upper;
-        setGuess('value', upper);
-    }
+function getCourtCardSVG(rank, suit, isRed) {
+    const primaryColor = isRed ? '#dc2626' : '#111827';
+    const robeColor = isRed ? '#b91c1c' : '#1e3a8a';
+    const goldColor = '#eab308';
+    
+    return `
+        <svg viewBox="0 0 100 140" width="100%" height="100%" style="position:absolute; top:0; left:0;">
+            <rect x="4" y="4" width="92" height="132" fill="none" stroke="${primaryColor}" stroke-width="1.5" rx="4"/>
+            <path d="M35,22 L50,10 L65,22 L60,32 L40,32 Z" fill="${goldColor}" stroke="#000" stroke-width="1"/>
+            <path d="M40,32 C40,42 60,42 60,32 Z" fill="#fbcfe8" stroke="#000" stroke-width="1"/>
+            <path d="M30,45 L70,45 L75,95 L25,95 Z" fill="${robeColor}" stroke="#000" stroke-width="1.5"/>
+            <circle cx="50" cy="65" r="8" fill="${goldColor}" stroke="#000" stroke-width="1"/>
+            <text x="50" y="70" text-anchor="middle" font-size="12" fill="${primaryColor}">${suit}</text>
+            <line x1="20" y1="30" x2="20" y2="110" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="20,20 17,32 23,32" fill="${goldColor}"/>
+            <g transform="translate(100, 140) rotate(180)">
+                <path d="M35,22 L50,10 L65,22 L60,32 L40,32 Z" fill="${goldColor}" stroke="#000" stroke-width="1"/>
+                <path d="M40,32 C40,42 60,42 60,32 Z" fill="#fbcfe8" stroke="#000" stroke-width="1"/>
+                <path d="M30,45 L70,45 L75,95 L25,95 Z" fill="${robeColor}" stroke="#000" stroke-width="1.5"/>
+            </g>
+            <text x="50" y="75" text-anchor="middle" font-size="28" font-weight="bold" fill="rgba(255,255,255,0.8)" stroke="#000" stroke-width="0.5">${rank}</text>
+        </svg>
+    `;
 }
 
 function flipCard() {
     if (isFlipping) return;
+    
+    const valInput = document.getElementById('value-input').value.trim().toUpperCase();
+    if (!valInput) {
+        document.getElementById('game-log').innerText = "⚠️ Please enter a card value first!";
+        return;
+    }
+    userGuess.value = valInput;
+
     isFlipping = true;
     document.getElementById('main-flip-btn').disabled = true;
-    document.getElementById('back-card').style.transform = 'rotateY(90deg)';
+    
+    // Animate back card away to reveal front card underneath
+    const backCard = document.getElementById('back-card');
+    backCard.style.transform = 'rotateY(90deg) scale(0.95)';
+    backCard.style.opacity = '0';
+    backCard.style.zIndex = '0';
+    
     const valMatch = userGuess.value === currentCard.value;
     const suitMatch = userGuess.suit === currentCard.suit;
     let resultType = "";
+    
     if (valMatch && suitMatch) {
         stats.exact++;
         resultType = "Exact";
@@ -429,18 +790,22 @@ function flipCard() {
         resultType = "Miss";
         document.getElementById('game-log').innerText = `Miss. It was the ${currentCard.value} of ${currentCard.suit}.`;
     }
+    
     sessionHistory.push({ guess: {...userGuess}, actual: {...currentCard}, type: resultType });
     updateStatsUI();
     saveToLocalStorage();
+    
+    // Wait to let the user inspect the revealed card, then draw next card *after* inspection
     setTimeout(() => {
         if(deck.length > 0) {
             drawNextCard();
         } else {
             currentCard = null;
             clearLocalStorage();
+            savePastSessionStats();
             endRound();
         }
-    }, 1800);
+    }, 2800);
 }
 
 function updateStatsUI() {
@@ -454,25 +819,25 @@ function endRound() {
     document.getElementById('deck-count').innerText = "Session Finished!";
     document.getElementById('game-controls').style.display = 'none';
     document.getElementById('reset-btn').style.display = 'block';
+    
     const total = sessionHistory.length || 52;
     const suitRate = ((stats.exact + stats.suitOnly) / total * 100).toFixed(0);
     const valRate = ((stats.exact + stats.numOnly) / total * 100).toFixed(0);
     let improvement = "";
     let focus = "";
+    
     if (suitRate > valRate) {
-        improvement = `Your <strong>Suit Connection (${suitRate}%)</strong> is remarkably sharp. You are focusing perfectly on the elemental symbols and red vs. black colors.`;
-        focus = `Your <strong>Value Recognition (${valRate}%)</strong> fell behind. Channel the patience of Henry Sugar's candle training—let your mind relax beyond specific faces or ranks to let the pure digit form.`;
+        improvement = `Your <strong>Suit Connection (${suitRate}%)</strong> is remarkably sharp. You are focusing perfectly on elemental symbols and color contrast.`;
+        focus = `Your <strong>Value Recognition (${valRate}%)</strong> fell behind. Channel the patience of Henry Sugar's candle training—let your mind relax beyond specific faces to let pure digits form.`;
     } else if (valRate > suitRate) {
         improvement = `Your <strong>Numeric Attunement (${valRate}%)</strong> was highly accurate! You are capturing the math and values effectively.`;
-        focus = `Your <strong>Suit Accuracy (${suitRate}%)</strong> was lower. Try visualizing simple colored shapes before choosing an exact crest.`;
+        focus = `Your <strong>Suit Accuracy (${suitRate}%)</strong> was lower. Try visualizing simple colored shapes before committing your choice.`;
     } else {
         improvement = "Your concentration was perfectly uniform across both suits and values.";
         focus = "To ascend beyond this baseline level, focus on breathing uniformly for three full seconds before committing your fingers to a selection.";
     }
+    
     document.getElementById('coach-text').innerHTML = `<strong>What you improved on:</strong> ${improvement}<br><br><strong>What to get better at:</strong> ${focus}`;
     document.getElementById('coach-panel').style.display = 'block';
 }
 </script>
-
-</body>
-</html>
